@@ -1,0 +1,28 @@
+﻿using AppBinForm.Store;
+using AppBinForm.ViewModel.Base;
+
+namespace AppBinForm.ViewModel
+{
+    public class MainWindowViewModel : BaseViewModels
+    {
+        private readonly NavigationStore _navigationStore;
+        public BaseViewModels? CurrentViewModel => _navigationStore.CurrentViewModel;
+
+        #region Заголовок окна
+        private string _title = "Преобразование файлов в бинарный вид";
+
+        public string Title { get => _title; set => Set(ref _title, value); }
+        #endregion
+
+        public MainWindowViewModel(NavigationStore navigationStore)
+        {
+            _navigationStore = navigationStore;
+            _navigationStore.CurrentViewModelChanged += OnCurrentViewModelChange;
+        }
+
+        private void OnCurrentViewModelChange()
+        {
+            OnPropertyChanged(nameof(CurrentViewModel));
+        }
+    }
+}
