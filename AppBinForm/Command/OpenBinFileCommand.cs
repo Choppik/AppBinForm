@@ -6,6 +6,12 @@ using Microsoft.Win32;
 using System.IO;
 using System.Text;
 using System;
+using AppBinForm.Model;
+using System.Collections.Generic;
+using MaterialDesignThemes.Wpf;
+using System.Collections.ObjectModel;
+using System.Windows.Shapes;
+using System.Windows.Controls;
 
 namespace AppBinForm.Command
 {
@@ -25,8 +31,8 @@ namespace AppBinForm.Command
         public async override Task ExecuteAsync(object? parameter)
         {
             OpenFile();
-            _file = ReadFile(_filePath);
-            WriteBinFile(_file);
+            _file = await ReadFile(_filePath);
+            await WriteBinFile(_file);
 
             _navigationService.Navigate();
         }
@@ -38,28 +44,23 @@ namespace AppBinForm.Command
             _filePath = openFile.FileName;
         }
 
-        private static byte[] ReadFile(string path)
+        private async static Task<byte[]> ReadFile(string path)
         {
             using (FileStream fs = new(path, FileMode.OpenOrCreate))
             {
                 byte[] buffer = new byte[fs.Length];
-                fs.Read(buffer, 0, (int)fs.Length);
+                await fs.ReadAsync(buffer, 0, buffer.Length);
                 fs.Close();
                 return buffer;
             }
         }
-        private static byte[] WriteBinFile(byte[] buffer)
+        private static async Task WriteBinFile(byte[] bytes)
         {
-            using (FileStream fs = new("fileBin.bin", FileMode.OpenOrCreate))
+            using (FileStream stream = new("fileBin.dat", FileMode.Create, FileAccess.ReadWrite))
             {
-                using (BinaryWriter bw = new(fs, Encoding.Default))
-                {
-                    bw.Write(buffer);
-                    bw.Close();
-                }
-                fs.Close();
+                await stream.WriteAsync(bytes);
+                stream.Close();
             }
-            return buffer;
         }
     }
 }

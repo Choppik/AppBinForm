@@ -109,7 +109,7 @@ namespace AppBinForm.ViewModel
         }
         private static void ReadBinFile()
         {
-            using (FileStream fs = new("fileBin.bin", FileMode.Open))
+            using (FileStream fs = new("fileBin.dat", FileMode.Open))
             {
                 using (BinaryReader bw = new(fs, Encoding.Default))
                 {
