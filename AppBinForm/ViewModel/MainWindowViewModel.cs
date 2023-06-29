@@ -3,10 +3,10 @@ using AppBinForm.ViewModel.Base;
 
 namespace AppBinForm.ViewModel
 {
-    public class MainWindowViewModel : BaseViewModels
+    public class MainWindowViewModel : BaseViewModel
     {
         private readonly NavigationStore _navigationStore;
-        public BaseViewModels? CurrentViewModel => _navigationStore.CurrentViewModel;
+        public BaseViewModel? CurrentViewModel => _navigationStore.CurrentViewModel;
 
         #region Заголовок окна
         private string _title = "Преобразование файлов в бинарный вид";
@@ -18,6 +18,12 @@ namespace AppBinForm.ViewModel
         {
             _navigationStore = navigationStore;
             _navigationStore.CurrentViewModelChanged += OnCurrentViewModelChange;
+        }
+
+        public override void Dispose()
+        {
+            _navigationStore.CurrentViewModelChanged -= OnCurrentViewModelChange;
+            base.Dispose();
         }
 
         private void OnCurrentViewModelChange()

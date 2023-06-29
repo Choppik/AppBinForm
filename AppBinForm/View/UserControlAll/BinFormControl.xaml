@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:AppBinForm.View.UserControlAll"
+             xmlns:local="clr-namespace:AppBinForm.View.UserControlAll" 
+             xmlns:viewmodel="clr-namespace:AppBinForm.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:BinFormViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -24,9 +25,9 @@
         <ListView Grid.Row="0" ItemsSource="{Binding File}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Смещение" DisplayMemberBinding="{Binding Task.NameTask}"/>
-                    <GridViewColumn Header="Байтовое представление" DisplayMemberBinding="{Binding Task.Contents}"/>
-                    <GridViewColumn Header="Символьное представление" DisplayMemberBinding="{Binding Task.TaskStage.NameTaskStage}"/>
+                    <GridViewColumn Header="Смещение" DisplayMemberBinding="{Binding Shift}"/>
+                    <GridViewColumn Header="Байтовое представление" DisplayMemberBinding="{Binding StrByte16}"/>
+                    <GridViewColumn Header="Символьное представление" DisplayMemberBinding="{Binding StrByte}"/>
                 </GridView>
             </ListView.View>
         </ListView>
@@ -40,15 +41,15 @@
             <Button Grid.Column="0"
                        HorizontalAlignment="Center"
                        Command="{Binding SaveBinFileCommand}"
-                       Content="Сохранить как" />
+                       Content="Сохранить как"/>
             <Button Grid.Column="1"
                        HorizontalAlignment="Center"
                        Command="{Binding OpenBinFileCommand}"
-                       Content="Выбрать файл" />
+                       Content="Выбрать файл"/>
             <Button Grid.Column="2"
                        HorizontalAlignment="Center"
                        Command="{Binding ConvertFileCommand}"
-                       Content="Преобразовать файл" />
+                       Content="Преобразовать файл"/>
         </Grid>
     </Grid>
 </UserControl>

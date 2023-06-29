@@ -7,8 +7,8 @@ namespace AppBinForm.Store
     {
         public event Action? CurrentViewModelChanged;
 
-        private BaseViewModels? _currentViewModel;
-        public BaseViewModels? CurrentViewModel
+        private BaseViewModel? _currentViewModel;
+        public BaseViewModel? CurrentViewModel
         {
             get => _currentViewModel;
             set
