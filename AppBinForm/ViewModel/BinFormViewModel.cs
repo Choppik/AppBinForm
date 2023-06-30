@@ -14,6 +14,9 @@ namespace AppBinForm.ViewModel
 
         private bool _isLoading;
         private bool _isChecked;
+        private string _str16;
+        private string _str;
+        private string _shift;
 
         public bool IsLoading
         {
@@ -41,6 +44,18 @@ namespace AppBinForm.ViewModel
         }
 
         public IEnumerable<FileBytes> File => _file;
+        public string Shift
+        {
+            get
+            {
+                return _shift;
+            }
+            set
+            {
+                _shift = value;
+                OnPropertyChanged(nameof(Shift));
+            }
+        }
         public FileBytes FileBytes
         {
             get
@@ -53,12 +68,37 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(FileBytes));
             }
         }
+        public string Str16
+        {
+            get
+            {
+                return _str16;
+            }
+            set
+            {
+                _str16 = value;
+                OnPropertyChanged(nameof(Str16));
+            }
+        }
+        public string Str
+        {
+            get
+            {
+                return _str;
+            }
+            set
+            {
+                _str = value;
+                OnPropertyChanged(nameof(Str));
+            }
+        }
         public ICommand OpenBinFileCommand { get; }
         public ICommand SaveBinFileCommand { get; }
 
         public BinFormViewModel()
         {
             OpenBinFileCommand = new OpenBinFileCommand(this);
+            _fileBytes = new FileBytes();
             _file = new ObservableCollection<FileBytes>();
             //SaveBinFileCommand = new SaveBinFileCommand(binFormViewModelNavigationService);
         }

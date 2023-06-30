@@ -15,22 +15,31 @@
             <Setter Property="Margin" Value="0,10,0,0"></Setter>
         </Style>
     </UserControl.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <ListView Grid.Row="0" ItemsSource="{Binding File}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Смещение" DisplayMemberBinding="{Binding Shift}"/>
-                    <GridViewColumn Header="Байтовое представление" DisplayMemberBinding="{Binding StrByte16}"/>
-                    <GridViewColumn Header="Символьное представление" DisplayMemberBinding="{Binding StrByte}"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0" VerticalAlignment="Stretch" Text="{Binding Shift}" IsEnabled="False"/>
+                    <TextBox Grid.Column="1" 
+                             VerticalAlignment="Stretch" 
+                             Text="{Binding Str16}" 
+                             ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                             HorizontalAlignment="Center"
+                             MaxWidth="260"
+                             TextWrapping="Wrap"/>
+            <TextBox Grid.Column="2" MaxWidth="260" TextWrapping="Wrap" VerticalAlignment="Stretch" Text="{Binding Str}"/>
+
+        </Grid>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
