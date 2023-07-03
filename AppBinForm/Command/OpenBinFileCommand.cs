@@ -5,9 +5,9 @@ using System.IO;
 using AppBinForm.ViewModel;
 using AppBinForm.Model;
 using System.Text;
-using System.Collections.Generic;
-using System;
-using System.Windows.Media.TextFormatting;
+using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
+using Microsoft.Extensions.Primitives;
 
 namespace AppBinForm.Command
 {
@@ -25,6 +25,10 @@ namespace AppBinForm.Command
         }
         public async override Task ExecuteAsync(object? parameter)
         {
+            _binFormViewModel.Shift = "";
+            _binFormViewModel.Str16 = "";
+            _binFormViewModel.Str = "";
+
             OpenFile();
             _binFormViewModel.FileBytes = new FileBytes();
             await ReadBinFile(_filePath);
@@ -39,61 +43,112 @@ namespace AppBinForm.Command
 
         private async Task ReadBinFile(string path)
         {
-            using FileStream stream = new(path, FileMode.Open, FileAccess.Read);
-            using BinaryReader reader = new(stream, Encoding.ASCII, false);
-            var con = 0;
-            long buffer = stream.Length;
-
             int nCols = 16;
+
+            using FileStream stream = new(path, FileMode.Open, FileAccess.Read);
+            using BinaryReader reader = new(stream, Encoding.UTF8);
+
+            var con = 0;
+            var buffer = stream.Length;
+
+
+            /*while (true)
+            {*/
+            var nBytesRead = buffer;
+
+            if (nBytesRead > 65536)
+                nBytesRead = 65536;
+
+            var nLines = (int)(nBytesRead / nCols) + 1;
+
+            string[] lines = new string[nLines];
+            string[] lines2 = new string[nLines];
+            string[] lines3 = new string[nLines];
+
             int nBytesToRead = 0;
 
-            StringBuilder shift = new(), strByte = new(), str = new();
-            shift.Capacity = 4 * nCols;
-            strByte.Capacity = 4 * nCols;
-            str.Capacity = 4 * nCols;
-            while (buffer > 0)
+            for (int i = 0; i < nLines; i++)
             {
-                long nBytesRead = buffer;
+                StringBuilder shift = new(), strByte = new(), str = new();
+                shift.Capacity = 4 * nCols;
+                strByte.Capacity = 4 * nCols;
+                str.Capacity = 4 * nCols;
 
-                if (nBytesRead > 65536)
-                    nBytesRead = 65536;
-
-                //long nLines = (nBytesRead / nCols) + 1;
-
-
-                /*                for (int j = 0; j < nBytesRead; j++)
-                                {*/
-                if (stream.Position % 16 == 0)
+                for (int j = 0; j < 16; j++)
                 {
-                    var str16f = string.Format("{0,1:X}" + "\n", stream.Position);
-                    if (str16f.Length == 1) str16f = str16f.Insert(0, "0000000"); else str16f = str16f.Insert(0, "000000");
-                    shift.Append(str16f);
-                }
+                    if (stream.Position % 16 == 0)
+                    {
+                        var str16f = string.Format("{0,1:X}", stream.Position);
+                        switch (str16f.Length)
+                        {
+                            case 0:
+                            case 1:
+                                str16f = str16f.Insert(0, "0000000");
+                                break;
+                            case 2:
+                                str16f = str16f.Insert(0, "000000");
+                                break;
+                            case 3:
+                                str16f = str16f.Insert(0, "00000");
+                                break;
+                            case 4:
+                                str16f = str16f.Insert(0, "0000");
+                                break;
+                            case 5:
+                                str16f = str16f.Insert(0, "000");
+                                break;
+                            case 6:
+                                str16f = str16f.Insert(0, "00");
+                                break;
+                            case 7:
+                                str16f = str16f.Insert(0, "0");
+                                break;
+                        }
+                        shift.Append(str16f);
+                    }
 
-                var nextByte = reader.ReadBytes(16);
+                    var nextByte = reader.ReadByte();
+                    nBytesToRead++;
 
-                nBytesToRead++;
-                foreach (byte b in nextByte)
-                {
-                    if (b < 0 || nBytesToRead > 65536)
+                    if (nextByte < 0 || nBytesToRead > 65536)
                         break;
 
-                    var nextChar = (char)b;
-                    strByte.Append(string.Format("{0,1:X}" + " ", (int)b));
+                    var nextChar = (char)nextByte;
+
+                    var strf = string.Format("{0,1:X}" + " ", (int)nextChar);
+                    if (strf.Length == 2) strf = strf.Insert(0, "0");
+                    strByte.Append(strf);
                     str.Append(nextChar);
+
+                    con++;
+
                 }
-                //}
+                lines[i] = shift.ToString();
+                lines2[i] = strByte.ToString();
+                lines3[i] = str.ToString();
 
-
-                con++;
-
-                buffer -= 16;
+                //buffer -= nBytesRead;
             }
-            _binFormViewModel.Shift = shift.ToString();
-            _binFormViewModel.Str16 = strByte.ToString();
-            _binFormViewModel.Str = str.ToString();
-            reader.Dispose();
+            reader.Close();
             stream.Close();
+
+            string pattern = @"[\r\n\t\v\f\a\e\0]";
+            Regex rgx = new(pattern);
+
+            string text = "";
+            string text2 = "";
+            string text3 = "";
+
+            foreach (string l in lines)
+                text += l + "\n";
+            foreach (string l in lines2)
+                text2 += l + "\n";
+            foreach (string l in lines3)
+                text3 += rgx.Replace(l, ".") + "\n";
+
+            _binFormViewModel.Shift = text;
+            _binFormViewModel.Str16 = text2;
+            _binFormViewModel.Str = text3;
         }
     }
 }

@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AppBinForm.View.UserControlAll" 
-             xmlns:viewmodel="clr-namespace:AppBinForm.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:BinFormViewModel}"
+             xmlns:viewmodel="clr-namespace:AppBinForm.ViewModel" 
+             d:DataContext="{d:DesignInstance Type=viewmodel:BinFormViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -18,32 +19,49 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0" VerticalAlignment="Stretch" Text="{Binding Shift}" IsEnabled="False"/>
-                    <TextBox Grid.Column="1" 
-                             VerticalAlignment="Stretch" 
-                             Text="{Binding Str16}" 
-                             ScrollViewer.VerticalScrollBarVisibility="Auto" 
-                             HorizontalAlignment="Center"
-                             MaxWidth="260"
-                             TextWrapping="Wrap"/>
-            <TextBox Grid.Column="2" MaxWidth="260" TextWrapping="Wrap" VerticalAlignment="Stretch" Text="{Binding Str}"/>
-
+            <TextBox Grid.Column="0" Text="00000000" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <TextBlock Grid.Column="1" Text="00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" VerticalAlignment="Top" FontSize="12"/>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <ScrollViewer Grid.Row="1" MaxHeight="500" MaxWidth="700">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" 
+                         VerticalAlignment="Stretch" 
+                         Text="{Binding Shift}" 
+                         IsEnabled="False"/>
+                <TextBox Grid.Column="1" 
+                         VerticalAlignment="Stretch" 
+                         Text="{Binding Str16}" 
+                         HorizontalAlignment="Center"
+                         MaxWidth="280"
+                         TextWrapping="Wrap"/>
+                <TextBox Grid.Column="2" 
+                         MaxWidth="280" 
+                         TextWrapping="Wrap" 
+                         VerticalAlignment="Stretch" 
+                         Text="{Binding Str}" 
+                         TextAlignment="Justify"/>
+            </Grid>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
@@ -55,10 +73,6 @@
                        HorizontalAlignment="Center"
                        Command="{Binding OpenBinFileCommand}"
                        Content="Выбрать файл"/>
-            <Button Grid.Column="2"
-                       HorizontalAlignment="Center"
-                       Command="{Binding ConvertFileCommand}"
-                       Content="Преобразовать файл"/>
         </Grid>
     </Grid>
 </UserControl>
