@@ -3,7 +3,7 @@ using System.Windows.Input;
 using AppBinForm.Command;
 using AppBinForm.Model;
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
+using System;
 
 namespace AppBinForm.ViewModel
 {
@@ -17,6 +17,7 @@ namespace AppBinForm.ViewModel
         private string _str16;
         private string _str;
         private string _shift;
+        private Int32 _pos;
 
         public bool IsLoading
         {
@@ -43,7 +44,7 @@ namespace AppBinForm.ViewModel
             }
         }
 
-        public IEnumerable<FileBytes> File => _file;
+        public ObservableCollection<FileBytes> File => _file;
         public string Shift
         {
             get
@@ -54,6 +55,18 @@ namespace AppBinForm.ViewModel
             {
                 _shift = value;
                 OnPropertyChanged(nameof(Shift));
+            }
+        }
+        public Int32 Pos
+        {
+            get
+            {
+                return _pos;
+            }
+            set
+            {
+                _pos = value;
+                OnPropertyChanged(nameof(Pos));
             }
         }
         public FileBytes FileBytes
@@ -98,8 +111,9 @@ namespace AppBinForm.ViewModel
         public BinFormViewModel()
         {
             OpenBinFileCommand = new OpenBinFileCommand(this);
-            _fileBytes = new FileBytes();
+            //_fileBytes = new FileBytes();
             _file = new ObservableCollection<FileBytes>();
+            _fileBytes = new FileBytes();
             //SaveBinFileCommand = new SaveBinFileCommand(binFormViewModelNavigationService);
         }
     }
