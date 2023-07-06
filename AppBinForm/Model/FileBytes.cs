@@ -4,7 +4,7 @@
     {
         public string Shift = "";
         public string StrByte16 = "";
-        public string StrByte = "";
+        public string Str = "";
 
         public FileBytes() { }
     }

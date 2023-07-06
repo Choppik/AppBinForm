@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AppBinForm.View.UserControlAll" 
              xmlns:viewmodel="clr-namespace:AppBinForm.ViewModel" 
+             xmlns:comp="clr-namespace:AppBinForm.Components"
              d:DataContext="{d:DesignInstance Type=viewmodel:BinFormViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
@@ -34,34 +35,26 @@
             <TextBlock Grid.Column="1" Text="00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" VerticalAlignment="Top" FontSize="12"/>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" MaxHeight="500" MaxWidth="700" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+        <ScrollViewer comp:ScrollViewerBinding.VerticalOffset="{Binding Pos}"  Grid.Row="1" MaxHeight="500" MaxWidth="700">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" 
-                         VerticalAlignment="Stretch"
-                         Text="{Binding Shift}"
-                         IsEnabled="False"
-                         FontFamily="Courier New"/>
+
+
                 <TextBox Grid.Column="1"
                          VerticalAlignment="Stretch" 
-                         Text="{Binding Str16}" 
+                         TextWrapping="Wrap" 
                          HorizontalAlignment="Center"
                          TextAlignment="Justify"
-                         MaxWidth="350"
-                         TextWrapping="Wrap" 
-                         FontFamily="Courier New"/>
-                <TextBox Grid.Column="2" 
-                         MaxWidth="120" 
-                         TextWrapping="Wrap" 
-                         VerticalAlignment="Stretch" 
-                         Text="{Binding Str}" 
                          IsEnabled="False"
-                         FontFamily="Courier New"
-                         TextAlignment="Justify"/>
+                         MaxWidth="350" Text="{Binding ResultStr, Mode=OneWay}"
+                         FontFamily="Courier New">
+
+                </TextBox>
+
             </Grid>
         </ScrollViewer>
 
