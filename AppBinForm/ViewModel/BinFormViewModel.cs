@@ -1,33 +1,36 @@
 ﻿using AppBinForm.ViewModel.Base;
 using System.Windows.Input;
 using AppBinForm.Command;
-using AppBinForm.Model;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System;
-using System.Timers;
 
 namespace AppBinForm.ViewModel
 {
     public class BinFormViewModel : BaseViewModel
     {
-        private StringBuilder _resultStr;
+        private StringBuilder _sb;
+        private FileStream _stream;
 
         private bool _isOpen = false;
         private string _filePath = "";
         private string _shift = "";
         private string _str16 = "";
         private string _str = "";
+        private string _resultStr = "";
         private long _currentPos = 0;
+        private int _leng = 0;
+        private int _count = 0;
         private int _offset = 0;
+        private int _changesOffset = 500;
+        private int _maxLines = 1000;
+        private long _buffer = 0;
 
         private readonly string pattern = @"[-]";
-        private readonly string pattern2 = @"[\n\r\t\a\b\f\0\v]";
-        private Regex rgx;
-        private Regex rgx2;
-        private FileStream _stream;
+        private readonly string pattern2 = @"[\n\r\t\a\b\f\0\v\u0000-\u0033]";
+        private Regex _rgx;
+        private Regex _rgx2;
 
         public bool IsOpen
         {
@@ -43,18 +46,44 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(IsOpen));
             }
         }
-        public string ResultStr => _resultStr.ToString();
-
-        public long CurrentPos
+        public FileStream Stream
         {
             get
             {
-                return _currentPos;
+                return _stream;
             }
             set
             {
-                _currentPos = value;
-                OnPropertyChanged(nameof(CurrentPos));
+                _stream = value;
+                OnPropertyChanged(nameof(Stream));
+                if (value != null)
+                {
+                    _count = 0;
+                    _changesOffset = 500;
+                    _buffer = Stream.Length;
+                    ReadBinFile(_buffer, CurrentPos);
+                }
+            }
+        }
+        public StringBuilder Sb
+        {
+            get => _sb;
+            set
+            {
+                _sb = value;
+                OnPropertyChanged(nameof(Sb));
+            }
+        }
+        public string ResultStr
+        {
+            get
+            {
+                return _resultStr;
+            }
+            set
+            {
+                _resultStr = value;
+                OnPropertyChanged(nameof(ResultStr));
             }
         }
         public string FilePath
@@ -69,21 +98,6 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(FilePath));
             }
         }
-        public FileStream Stream
-        {
-            get
-            {
-                return _stream;
-            }
-            set
-            {
-                _stream = value;
-                OnPropertyChanged(nameof(Stream));
-                if (_stream != null)
-                    ReadBinFile(_stream.Length, _currentPos);
-            }
-        }
-
         public string Shift
         {
             get
@@ -120,6 +134,18 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(Str));
             }
         }
+        public long CurrentPos
+        {
+            get
+            {
+                return _currentPos;
+            }
+            set
+            {
+                _currentPos = value;
+                OnPropertyChanged(nameof(CurrentPos));
+            }
+        }
         public int Offset
         {
             get
@@ -129,9 +155,9 @@ namespace AppBinForm.ViewModel
             set
             {
                 _offset = value;
-                if (_offset % 32 == 0)
-                    ReadBinFile(32, _currentPos);
                 OnPropertyChanged(nameof(Offset));
+                if (_offset > _changesOffset)
+                    ReadBinFile(_buffer, CurrentPos);
             }
         }
         public ICommand OpenBinFileCommand { get; }
@@ -140,41 +166,59 @@ namespace AppBinForm.ViewModel
         public BinFormViewModel()
         {
             OpenBinFileCommand = new OpenBinFileCommand(this);
-            _resultStr = new();
-            rgx = new(pattern);
-            rgx2 = new(pattern2);
-            //SaveBinFileCommand = new SaveBinFileCommand(binFormViewModelNavigationService);
+            Sb = new();
+            _rgx = new(pattern);
+            _rgx2 = new(pattern2);
+            //SaveBinFileCommand = new SaveBinFileCommand();
         }
 
         private void ReadBinFile(long buffer, long currentPos)
         {
-            var maxBytesRead = buffer;
-            var nBytesRead = 16;
+            if (buffer == 0) return;
+            if (Offset > _changesOffset)
+            {
+                Sb.Remove(0, _leng * 100);
+                _count -= 100;
+                _changesOffset = Offset;
+                Offset -= Offset;
+            }
+            /*else if (Offset < _changesOffset && Offset != 0)
+            {
+                Sb.Remove(_leng / _minLeng, _leng / _minLeng);
+                _changesOffset -= _changesOffset;
+            }*/
 
-            if (maxBytesRead > 65536) maxBytesRead = 65536;
+
+            //var count = 0;
+            var maxBytesRead = buffer; //Получаю количество байт
+            var nBytesRead = 16; //Сколько байт нужно записать в 1 линию
+
+            Stream.Seek(currentPos, SeekOrigin.Begin); //Установка позиции
+            //var f = Stream.Seek(0, SeekOrigin.End); //Установка позиции
+
+            if (maxBytesRead > 65536 / 4) maxBytesRead = 65536 / 4; //Сколько нужно за раз прочитать из файла байт
 
             while (maxBytesRead > 0)
             {
-                var buf = new byte[nBytesRead];
+                Shift = Stream.Position.ToString("X8") + " : "; //Каждый 16 байт записывается смещение
 
-                int len = _stream.Read(buf, (int)currentPos, buf.Length);
-                _shift = _stream.Position.ToString("X8") + " : ";
-                _str16 = rgx.Replace(BitConverter.ToString(buf), " ") + " | ";
-                /*foreach (byte b in buf)
-                {
-                    //_str16 += b.ToString("X2") + " ";
-                    if (b >= 33 || b <= 126)
-                        _str += b.ToString() + " ";
-                    else _str += ". ";
-                }*/
-                _str = rgx2.Replace(Encoding.ASCII.GetString(buf), ".");
-                _resultStr.Append(_shift);
-                _resultStr.Append(_str16);
-                _resultStr.Append(_str);
-                _resultStr.Append("\n");
+                var buf = new byte[nBytesRead];
+                int len = Stream.Read(buf, 0, buf.Length); //Заполнение массива байт и расчет длины массива
+
+                Str16 = _rgx.Replace(BitConverter.ToString(buf), " ") + " | "; //Строка в байтовом представлении
+                Str = _rgx2.Replace(Encoding.ASCII.GetString(buf), "."); //Строка в символьном представлении
+                Sb.Append(_shift);
+                Sb.Append(_str16);
+                Sb.Append(_str);
+                Sb.Append('\n'); //Объединение строк в одну строку
+                _count++;
+                _leng = Sb.Length / _count;//78
                 maxBytesRead -= len;
+                CurrentPos = Stream.Position; //Запоминание последней позиции в потоке
+                if (_count >= _maxLines) break; //Не должно превышать максимум линий
             }
-            _currentPos = _stream.Position;
+            _buffer -= maxBytesRead;
+            ResultStr = Sb.ToString();
         }
     }
 }

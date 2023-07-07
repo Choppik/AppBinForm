@@ -15,23 +15,15 @@ namespace AppBinForm.Command
         }
         public override void Execute(object? parameter)
         {
-            OpenFile();
-
-/*            if (_binFormViewModel.IsOpen == true)
-            {
-                _binFormViewModel.Shift = "";
-                _binFormViewModel.Str16 = "";
-                _binFormViewModel.Str = "";
-            }*/
-        }
-
-        private void OpenFile()
-        {
             OpenFileDialog openFile = new();
             if (openFile.ShowDialog() == true)
             {
+                _binFormViewModel.IsOpen = false;
+                _binFormViewModel.Sb.Clear();
                 _binFormViewModel.FilePath = openFile.FileName;
                 _binFormViewModel.IsOpen = true;
+                _binFormViewModel.CurrentPos = 0;
+                _binFormViewModel.Offset = 0;
                 _binFormViewModel.Stream = new(_binFormViewModel.FilePath, FileMode.Open, FileAccess.Read);
             }
         }
