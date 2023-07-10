@@ -19,7 +19,6 @@ namespace AppBinForm.Command
             if (openFile.ShowDialog() == true)
             {
                 _binFormViewModel.IsOpen = false;
-                _binFormViewModel.Sb.Clear();
                 _binFormViewModel.FilePath = openFile.FileName;
                 _binFormViewModel.IsOpen = true;
                 _binFormViewModel.CurrentPos = 0;
