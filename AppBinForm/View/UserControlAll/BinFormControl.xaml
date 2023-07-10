@@ -31,7 +31,14 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0" Text="00000000" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <TextBox Grid.Column="0" 
+                     Text="{Binding StrSearch}" 
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding SearchBinFileCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
             <TextBlock Grid.Column="1" Text="00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" VerticalAlignment="Top" FontSize="12"/>
         </Grid>
 
@@ -48,7 +55,7 @@
                          VerticalAlignment="Stretch" 
                          TextWrapping="Wrap" 
                          HorizontalAlignment="Center"
-                         TextAlignment="Justify"
+                         TextAlignment="Justify" ScrollViewer.VerticalScrollBarVisibility="Auto"
                          IsEnabled="False"
                          MaxWidth="600" Text="{Binding ResultStr}"
                          FontFamily="Courier New">
@@ -64,10 +71,6 @@
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0"
-                       HorizontalAlignment="Center"
-                       Command="{Binding SaveBinFileCommand}"
-                       Content="Сохранить как"/>
-            <Button Grid.Column="1"
                        HorizontalAlignment="Center"
                        Command="{Binding OpenBinFileCommand}"
                        Content="Выбрать файл"/>

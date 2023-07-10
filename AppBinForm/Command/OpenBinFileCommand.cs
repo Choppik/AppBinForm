@@ -23,8 +23,8 @@ namespace AppBinForm.Command
                 _binFormViewModel.FilePath = openFile.FileName;
                 _binFormViewModel.IsOpen = true;
                 _binFormViewModel.CurrentPos = 0;
-                _binFormViewModel.Offset = 0;
                 _binFormViewModel.Stream = new(_binFormViewModel.FilePath, FileMode.Open, FileAccess.Read);
+                _binFormViewModel.Offset = 0;
             }
         }
     }
