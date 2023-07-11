@@ -1,5 +1,6 @@
 ﻿using AppBinForm.Command.Base;
 using AppBinForm.ViewModel;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 
@@ -7,8 +8,8 @@ namespace AppBinForm.Command
 {
     public class SearchBinFileCommand : BaseCommand
     {
-        private BinFormViewModel _binFormViewModel;
-        private Regex _regex;
+        private readonly BinFormViewModel _binFormViewModel;
+        private readonly Regex _regex;
 
         public SearchBinFileCommand(BinFormViewModel binFormViewModel, Regex regex)
         {
@@ -22,11 +23,15 @@ namespace AppBinForm.Command
                 MessageBox.Show("Некорректный ввод.");
                 return;
             }
-            var search = _regex.Replace(_binFormViewModel.StrSearch, "");
-            long.TryParse(search, System.Globalization.NumberStyles.HexNumber, null, out long i);
+            long.TryParse(_binFormViewModel.StrSearch, System.Globalization.NumberStyles.HexNumber, null, out long i);
             while (i%16 != 0)
             {
                 i--;
+            }
+            if (i > _binFormViewModel.Stream.Length)
+            {
+                MessageBox.Show("Позиция превышает размер файла.");
+                return;
             }
             _binFormViewModel.CurrentPos = i;
             _binFormViewModel.IsSearch = true;

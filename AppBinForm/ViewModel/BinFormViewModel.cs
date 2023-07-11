@@ -11,7 +11,6 @@ namespace AppBinForm.ViewModel
     public class BinFormViewModel : BaseViewModel
     {
         #region Переменные и свойства
-        private StringBuilder _sb;
         private FileStream _stream;
 
         private bool _isOpen = false;
@@ -24,7 +23,7 @@ namespace AppBinForm.ViewModel
         private long _currentPos = 0;
         private long _previousPos = 0;
         private long _buffer = 0;
-        private int _leng = 79;
+        private int _leng = 79; 
         private int _count = 0;
         private int _con = 0;
         private int _offset = 0;
@@ -94,15 +93,6 @@ namespace AppBinForm.ViewModel
                 }
             }
         }
-        public StringBuilder Sb
-        {
-            get => _sb;
-            set
-            {
-                _sb = value;
-                OnPropertyChanged(nameof(Sb));
-            }
-        }
         public string ResultStr
         {
             get
@@ -164,7 +154,7 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(Offset));
                 if (_offset < _preOffset) IsScroll = true;
                 else IsScroll = false;
-                if (IsOpen == true)
+                if (IsOpen == true && IsSearch == false)
                     ReadBinFile(_buffer, CurrentPos);
             }
         }
@@ -175,7 +165,6 @@ namespace AppBinForm.ViewModel
         public BinFormViewModel()
         {
             OpenBinFileCommand = new OpenBinFileCommand(this);
-            Sb = new();
             _rgx = new(pattern);
             _rgx2 = new(pattern2);
             _rgx3 = new(pattern3);
@@ -190,21 +179,21 @@ namespace AppBinForm.ViewModel
             {
                 Stream.Seek(currentPos, SeekOrigin.Begin); //Установка позиции
             }
-            else if (IsSearch == true)
+            else if (IsSearch)
             {
                 _con = 0;
                 _count = 0;
                 ResultStr = "";
                 Stream.Seek(currentPos, SeekOrigin.Begin); //Установка позиции
             }
-            else if (IsScroll == false)
+            else if (!IsScroll)
             {
                 ResultStr = ResultStr.Remove(0, _leng * (_maxLines / 100));
                 _count -= _maxLines / 100;
                 Stream.Seek(currentPos, SeekOrigin.Begin); //Установка позиции
                 _con++;
             }
-            else if (IsScroll == true)
+            else if (IsScroll)
             {
                 ResultStr = ResultStr.Remove(_leng * (_maxLines - _maxLines / 100));
                 _count -= _maxLines / 100;
@@ -242,7 +231,7 @@ namespace AppBinForm.ViewModel
 
             if (_previousPos == 0) _con = 0;
 
-            if (IsScroll != false && currentPos != 0)
+            if (IsScroll && currentPos != 0)
             {
                 CurrentPos = _previousPos - newPos;
                 _previousPos -= newPos;

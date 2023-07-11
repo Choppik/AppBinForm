@@ -7,7 +7,7 @@ namespace AppBinForm.Command
 {
     public class OpenBinFileCommand : BaseCommand
     {
-        private BinFormViewModel _binFormViewModel;
+        private readonly BinFormViewModel _binFormViewModel;
 
         public OpenBinFileCommand(BinFormViewModel binFormViewModel)
         {
