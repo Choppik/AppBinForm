@@ -30,7 +30,6 @@ namespace AppBinForm.Command
             }
             _binFormViewModel.CurrentPos = i;
             _binFormViewModel.IsSearch = true;
-            //_binFormViewModel.Offset = 500;
         }
     }
 }

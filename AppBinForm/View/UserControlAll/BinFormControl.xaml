@@ -24,16 +24,13 @@
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <ScrollViewer comp:ScrollViewerBinding.VerticalOffset="{Binding Offset}" Grid.Row="0" MaxHeight="500" MaxWidth="700" IsHitTestVisible="True">
+        <ScrollViewer comp:ScrollViewerBinding.VerticalOffset="{Binding Offset}" Grid.Row="0" MaxHeight="500" MaxWidth="700" ScrollViewer.IsDeferredScrollingEnabled="True">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto"/>
-                </Grid.RowDefinitions>
 
                 <TextBox Grid.Column="1"
                          VerticalAlignment="Stretch" 
