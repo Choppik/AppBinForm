@@ -18,9 +18,14 @@ namespace AppBinForm.Command
         }
         public override void Execute(object? parameter)
         {
+            if (!_binFormViewModel.IsOpen)
+            {
+                MessageBox.Show("Файл не выбран.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             if (_regex.IsMatch(_binFormViewModel.StrSearch) == true)
             {
-                MessageBox.Show("Некорректный ввод.");
+                MessageBox.Show("Некорректный ввод.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             long.TryParse(_binFormViewModel.StrSearch, System.Globalization.NumberStyles.HexNumber, null, out long i);
@@ -30,10 +35,10 @@ namespace AppBinForm.Command
             }
             if (i > _binFormViewModel.Stream.Length)
             {
-                MessageBox.Show("Позиция превышает размер файла.");
+                MessageBox.Show("Введенная позиция превышает размер файла.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            _binFormViewModel.CurrentPos = i;
+            _binFormViewModel.CurrentPosition = i;
             _binFormViewModel.IsSearch = true;
         }
     }

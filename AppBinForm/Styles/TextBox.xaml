@@ -8,8 +8,6 @@
 
         <Setter Property="VerticalAlignment"
                 Value="Center" />
-        <Setter Property="Margin"
-                Value="0,0,0,10" />
         <Setter Property="materialDesign:TextFieldAssist.UnderlineBrush"
                 Value="#FF20900B"/>
         <Setter Property="materialDesign:HintAssist.Foreground"

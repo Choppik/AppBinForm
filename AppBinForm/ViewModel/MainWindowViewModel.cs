@@ -9,7 +9,7 @@ namespace AppBinForm.ViewModel
         public BaseViewModel? CurrentViewModel => _navigationStore.CurrentViewModel;
 
         #region Заголовок окна
-        private string _title = "Преобразование файлов в бинарный вид";
+        private string _title = "HexViewer";
 
         public string Title { get => _title; set => Set(ref _title, value); }
         #endregion

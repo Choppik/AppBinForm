@@ -10,12 +10,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <Style TargetType="Button" BasedOn="{StaticResource Button_Style}"></Style>
-        <Style TargetType="TextBox" BasedOn="{StaticResource TextBox_Style}">
-        </Style>
-        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockDefault_Style}">
-            <Setter Property="Margin" Value="0,10,0,0"></Setter>
-        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource Button_Style}"/>
+        <Style TargetType="TextBox" BasedOn="{StaticResource TextBox_Style}"/>
+        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockDefault_Style}"/>
     </UserControl.Resources>
 
     <Grid>
@@ -24,7 +21,9 @@
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <ScrollViewer comp:ScrollViewerBinding.VerticalOffset="{Binding Offset}" Grid.Row="0" MaxHeight="500" MaxWidth="700" ScrollViewer.IsDeferredScrollingEnabled="True">
+        <ScrollViewer comp:ScrollViewerBinding.VerticalOffset="{Binding Offset}" 
+                      comp:ScrollViewerBinding.ScrollableHeight="{Binding MaxOffset}"
+                      Grid.Row="0" MaxHeight="500" MaxWidth="700" >
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
@@ -44,24 +43,49 @@
             </Grid>
         </ScrollViewer>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0"
-                       HorizontalAlignment="Center"
-                       Command="{Binding OpenBinFileCommand}"
-                       Content="Выбрать файл"/>
 
-            <TextBox Grid.Column="1" Margin="0,0,0,25"
-                             Text="{Binding StrSearch}"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Bottom">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding SearchBinFileCommand}"/>
-                </TextBox.InputBindings>
-            </TextBox>
+            <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Поиск:" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox Grid.Column="1" MinWidth="60" MaxWidth="100"
+                         Text="{Binding StrSearch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         TextAlignment="Center"
+                         FontFamily="Courier New"
+                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,10">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding SearchBinFileCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+            </Grid>
+            <Button Grid.Column="1" 
+                    HorizontalAlignment="Center"
+                    Command="{Binding OpenBinFileCommand}"
+                    Content="Выбрать файл" Margin="20,0,20,0"/>
+
+            <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Файл:" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Размер: "/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FilePath}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Buffer}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </Grid>
+
         </Grid>
     </Grid>
 </UserControl>

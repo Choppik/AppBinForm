@@ -21,9 +21,9 @@ namespace AppBinForm.Command
                 _binFormViewModel.IsOpen = false;
                 _binFormViewModel.FilePath = openFile.FileName;
                 _binFormViewModel.IsOpen = true;
-                _binFormViewModel.CurrentPos = 0;
+                _binFormViewModel.CurrentPosition = 0;
+                _binFormViewModel.ResultStr = "";
                 _binFormViewModel.Stream = new(_binFormViewModel.FilePath, FileMode.Open, FileAccess.Read);
-                _binFormViewModel.Offset = 0;
             }
         }
     }

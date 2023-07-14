@@ -8,8 +8,6 @@
 
         <Setter Property="VerticalAlignment"
                 Value="Center" />
-        <Setter Property="Margin"
-                Value="20" />
         <Setter Property="Background"
                 Value="#FF20900B"/>
         <Setter Property="BorderBrush"
