@@ -257,7 +257,7 @@ namespace AppBinForm.ViewModel
                 if (CurrentPosition >= buffer) break;
             }
             if (currentPosition == 0) _previousPosition = CurrentPosition / 2;
-            if (CurrentPosition != buffer && Offset != 0 && !IsSearch) Offset = MaxOffset / 2;
+            if (CurrentPosition != buffer && Offset != 0 && !IsSearch) Offset = MaxOffset / 2; //Проверки, когда нужно сместить ползунок в середину
             if (currentPosition != 0 && Offset == 0 && MaxOffset != 0) Offset = MaxOffset / 2;
             if (IsSearch) Offset = 1;
 
