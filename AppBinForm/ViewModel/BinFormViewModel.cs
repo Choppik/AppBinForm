@@ -19,14 +19,14 @@ namespace AppBinForm.ViewModel
         private bool _isSearch = false;
         private string _filePath = "";
         private string _resultStr = "";
-        private string _strSearch;
+        private string _strSearch = "00000000";
         private long _currentPos = 0;
         private long _previousPosition = 0;
         private long _buffer = 0;
         private readonly long _sizeFile = 4000000000;
         private double _offset = 0.00;
         private double _maxOffset = 0.00;
-        private int _nBytesRead = 16; //Сколько байт нужно записать в 1 линию
+        private readonly int _nBytesRead = 16; //Сколько байт нужно записать в 1 линию
         private readonly int _maxLines = 1000;
         private readonly string pattern = @"[-]";
         private readonly string pattern2 = @"[\n\r\t\a\b\f\0\v\u0000-\u0033]";

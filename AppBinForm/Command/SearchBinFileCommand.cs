@@ -38,6 +38,7 @@ namespace AppBinForm.Command
                 MessageBox.Show("Введенная позиция превышает размер файла.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+            if (_binFormViewModel.MaxOffset == 0) return;
             _binFormViewModel.CurrentPosition = i;
             _binFormViewModel.IsSearch = true;
         }
