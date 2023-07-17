@@ -17,15 +17,17 @@ namespace AppBinForm.ViewModel
         private bool _isOpen = false;
         private bool _isScroll = false;
         private bool _isSearch = false;
+        private bool _isChecked = true;
         private string _filePath = "";
         private string _resultStr = "";
         private string _strSearch = "00000000";
+        private double _offset = 0.00;
+        private double _maxOffset = 0.00;
+        private int _count = 1;
         private long _currentPos = 0;
         private long _previousPosition = 0;
         private long _buffer = 0;
         private readonly long _sizeFile = 4000000000;
-        private double _offset = 0.00;
-        private double _maxOffset = 0.00;
         private readonly int _nBytesRead = 16; //Сколько байт нужно записать в 1 линию
         private readonly int _maxLines = 1000;
         private readonly string pattern = @"[-]";
@@ -61,6 +63,18 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(IsScroll));
             }
         }
+        public bool IsChecked
+        {
+            get
+            {
+                return _isChecked;
+            }
+            set
+            {
+                _isChecked = value;
+                OnPropertyChanged(nameof(IsChecked));
+            }
+        }
         public bool IsSearch
         {
             get
@@ -71,7 +85,11 @@ namespace AppBinForm.ViewModel
             {
                 _isSearch = value;
                 OnPropertyChanged(nameof(IsSearch));
-                if (_isSearch) ReadBinFile(Buffer, CurrentPosition);
+                if (_isSearch)
+                {
+                    ReadBinFile(Buffer, CurrentPosition);
+                    IsChecked = true;
+                }
             }
         }
         public FileStream Stream
@@ -162,15 +180,35 @@ namespace AppBinForm.ViewModel
             {
                 _offset = value;
                 OnPropertyChanged(nameof(Offset));
-                if (_offset == 0 && !(CurrentPosition - _previousPosition <= _previousPosition))
+                if (IsChecked)
                 {
-                    IsScroll = true;
-                    ReadBinFile(Buffer, CurrentPosition);
+                    if (_offset == 0 && !(CurrentPosition - _previousPosition <= _previousPosition))
+                    {
+                        IsScroll = true;
+                        ReadBinFile(Buffer, CurrentPosition);
+                    }
+                    else if (_offset == _maxOffset && CurrentPosition != _buffer && CurrentPosition != 0)
+                    {
+                        IsScroll = false;
+                        ReadBinFile(Buffer, CurrentPosition);
+                    }
                 }
-                else if (_offset == _maxOffset && CurrentPosition != _buffer && CurrentPosition != 0)
+                else
                 {
-                    IsScroll = false;
-                    ReadBinFile(Buffer, CurrentPosition);
+                    var f = MaxOffset / 100 * _count;
+
+                    if (_offset != 0 && _offset > f)
+                    {
+                        IsScroll = false;
+                        _count = (int)(MaxOffset / _offset);//Тута
+                        ReadBinFileInPercent(Buffer, _count);
+                    }
+                    else if (_offset != _maxOffset && _offset > f)
+                    {
+                        IsScroll = true;
+                        //_count++;
+                        ReadBinFileInPercent(Buffer, _count);
+                    }
                 }
             }
         }
@@ -201,37 +239,61 @@ namespace AppBinForm.ViewModel
 
         private void ReadBinFile(long buffer, long currentPosition)
         {
+            if (buffer == 0) return; //Если размер файла 0, то выйти
+            else if (currentPosition == 0) Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка начальной позиции
+            else if (IsSearch) Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка конкретной позиции
+            else if (!IsScroll) Stream.Seek(currentPosition - _previousPosition, SeekOrigin.Begin); //Установка позиции при скроллинге вниз
+            else if (IsScroll)
+            {
+                var newPosition = currentPosition - _previousPosition * 2;
+                if (newPosition != 0 && newPosition < _previousPosition) Stream.Seek(0, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
+                else Stream.Seek(newPosition - _previousPosition, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
+            }
+            else return;
+
+            StringBuilder sb = ReadPartFile(buffer);
+
+            if (currentPosition == 0) _previousPosition = CurrentPosition / 2;
+            if (CurrentPosition != buffer && Offset != 0 && !IsSearch) Offset = MaxOffset / 2; //Проверки, когда нужно сместить ползунок в середину
+            if (currentPosition != 0 && Offset == 0 && MaxOffset != 0) Offset = MaxOffset / 2;
+            if (IsSearch) Offset = 1;
+
+            ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
+            IsSearch = false;
+            _count = 1;
+        }
+
+        private void ReadBinFileInPercent(long buffer, int count)
+        {
+            if (buffer == 0) return; //Если размер файла 0, то выйти
+            if (count == 0) return;
+
+            var buf = buffer / 100;
+            var curPos = buf * count;
+
+            while (curPos % 16 != 0)
+            {
+                curPos--;
+            }
+
+            if (count + 1 == 100) Stream.Seek(-(_nBytesRead*_maxLines), SeekOrigin.End);
+            else Stream.Seek(curPos, SeekOrigin.Begin); //Установка позиции
+
+            StringBuilder sb = ReadPartFile(buffer);
+
+            if (curPos == 0) _previousPosition = CurrentPosition / 2;
+            ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
+            IsSearch = false;
+        }
+        private StringBuilder ReadPartFile(long buffer)
+        {
             var maxBytesRead = buffer; //Получаю количество байт для чтения
             var shift = "";
             var x8Shift = "X8";
             var x10Shift = "X10";
             StringBuilder sb = new();
 
-            if (buffer == 0) return; //Если размер файла 0, то выйти
-            else if (currentPosition == 0)
-            {
-                ResultStr = ResultStr.Remove(0);
-                Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка начальной позиции
-            }
-            else if (IsSearch)
-            {
-                ResultStr = ResultStr.Remove(0);
-                Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка конкретной позиции
-            }
-            else if (!IsScroll)
-            {
-                ResultStr = ResultStr.Remove(0);
-                Stream.Seek(currentPosition - _previousPosition, SeekOrigin.Begin); //Установка позиции при скроллинге вниз
-            }
-            else if (IsScroll)
-            {
-                ResultStr = ResultStr.Remove(0);
-                var newPosition = currentPosition - _previousPosition * 2;
-                if (newPosition != 0 && newPosition < _previousPosition)
-                Stream.Seek(0, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
-                else Stream.Seek(newPosition - _previousPosition, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
-            }
-            else return;
+            ResultStr = ResultStr.Remove(0);
 
             if (maxBytesRead > _maxLines * _nBytesRead) maxBytesRead = _maxLines * _nBytesRead; //Сколько можно за раз прочитать из файла байт
 
@@ -256,13 +318,7 @@ namespace AppBinForm.ViewModel
                 CurrentPosition = Stream.Position; //Запоминание последней позиции в потоке
                 if (CurrentPosition >= buffer) break;
             }
-            if (currentPosition == 0) _previousPosition = CurrentPosition / 2;
-            if (CurrentPosition != buffer && Offset != 0 && !IsSearch) Offset = MaxOffset / 2; //Проверки, когда нужно сместить ползунок в середину
-            if (currentPosition != 0 && Offset == 0 && MaxOffset != 0) Offset = MaxOffset / 2;
-            if (IsSearch) Offset = 1;
-
-            ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
-            IsSearch = false;
+            return sb;
         }
     }
 }
