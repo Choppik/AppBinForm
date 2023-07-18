@@ -23,6 +23,8 @@ namespace AppBinForm.ViewModel
         private string _strSearch = "00000000";
         private double _offset = 0.00;
         private double _maxOffset = 0.00;
+        private double _maxShProc = 0.00;
+        private double _minShProc = 0.00;
         private int _count = 1;
         private long _currentPos = 0;
         private long _previousPosition = 0;
@@ -195,19 +197,26 @@ namespace AppBinForm.ViewModel
                 }
                 else
                 {
-                    var f = MaxOffset / 100 * _count;
 
-                    if (_offset != 0 && _offset > f)
+                    if (_offset != 0 && _offset > _minShProc && _maxShProc <= _offset)
                     {
-                        IsScroll = false;
-                        _count = (int)(MaxOffset / _offset);//Тута
-                        ReadBinFileInPercent(Buffer, _count);
+                        if (_offset / _minShProc >= _count + 1)
+                        {
+                            IsScroll = false;
+                            _count = (int)(_offset / _minShProc);
+                            _maxShProc = _offset;
+                            ReadBinFileInPercent(Buffer, CurrentPosition, _count);
+                        }
                     }
-                    else if (_offset != _maxOffset && _offset > f)
+                    else if (_offset != MaxOffset && _offset < _maxShProc)
                     {
-                        IsScroll = true;
-                        //_count++;
-                        ReadBinFileInPercent(Buffer, _count);
+                        if (_offset / _minShProc <= _count - 1)
+                        {
+                            IsScroll = true;
+                            _count = (int)(_offset / _minShProc);
+                            _maxShProc = _offset;
+                            ReadBinFileInPercent(Buffer, CurrentPosition, _count);
+                        }
                     }
                 }
             }
@@ -222,6 +231,10 @@ namespace AppBinForm.ViewModel
             {
                 _maxOffset = value;
                 OnPropertyChanged(nameof(MaxOffset));
+                if (MaxOffset != 0)
+                {
+                    _minShProc = MaxOffset / 100;
+                }
             }
         }
         public ICommand OpenBinFileCommand { get; }
@@ -260,28 +273,30 @@ namespace AppBinForm.ViewModel
 
             ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
             IsSearch = false;
-            _count = 1;
         }
 
-        private void ReadBinFileInPercent(long buffer, int count)
+        private void ReadBinFileInPercent(long buffer, long currentPosition, int count)
         {
             if (buffer == 0) return; //Если размер файла 0, то выйти
-            if (count == 0) return;
-
             var buf = buffer / 100;
-            var curPos = buf * count;
 
-            while (curPos % 16 != 0)
+            while (buf % 16 != 0)
             {
-                curPos--;
+                buf--;
             }
 
-            if (count + 1 == 100) Stream.Seek(-(_nBytesRead*_maxLines), SeekOrigin.End);
-            else Stream.Seek(curPos, SeekOrigin.Begin); //Установка позиции
+            var curPos = buf * count;
+
+            if (currentPosition == 0) Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка начальной позиции
+            else if (count == 100 && !IsScroll) Stream.Seek(-_nBytesRead * _maxLines, SeekOrigin.End);
+            else if (!IsScroll) Stream.Seek(curPos, SeekOrigin.Begin); //Установка позиции при скроллинге вниз
+            else if ((count == 0 && IsScroll) || curPos - buf < 0) Stream.Seek(0, SeekOrigin.Begin);
+            else if (IsScroll) Stream.Seek(curPos - buf, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
+            else return;
 
             StringBuilder sb = ReadPartFile(buffer);
 
-            if (curPos == 0) _previousPosition = CurrentPosition / 2;
+            //if (curPos == 0) _previousPosition = CurrentPosition / 2;
             ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
             IsSearch = false;
         }
