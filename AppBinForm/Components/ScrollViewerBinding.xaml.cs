@@ -45,14 +45,9 @@ namespace AppBinForm.Components
             DependencyPropertyChangedEventArgs e)
         {
             ScrollViewer scrollViewer = d as ScrollViewer;
-            if (scrollViewer == null)
-                return;
-
+            if (scrollViewer == null) return;
             BindVerticalOffset(scrollViewer);
-            //if(scrollViewer.ScrollableHeight != scrollViewer.VerticalOffset)
             scrollViewer.ScrollToVerticalOffset((double)e.NewValue);
-            //else scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset / 2);
-            //BindScrollableHeight(scrollViewer);
         }
         private static void OnScrollableHeightPropertyChanged(DependencyObject d,
             DependencyPropertyChangedEventArgs e)
@@ -70,16 +65,13 @@ namespace AppBinForm.Components
             scrollViewer.SetValue(VerticalScrollBindingProperty, true);
             scrollViewer.ScrollChanged += (s, se) =>
             {
-                if (se.VerticalChange == 0)
-                    return;
+                if (se.VerticalChange == 0) return;
                 SetVerticalOffset(scrollViewer, se.VerticalOffset);
             };
         }
         public static void BindScrollableHeight(ScrollViewer scrollViewer)
         {
-            if (scrollViewer.GetValue(ScrollableHeightBindingProperty) != null)
-                return;
-
+            if (scrollViewer.GetValue(ScrollableHeightBindingProperty) != null) return;
             scrollViewer.SetValue(ScrollableHeightBindingProperty, true);
             scrollViewer.ScrollChanged += (s, se) =>
             {

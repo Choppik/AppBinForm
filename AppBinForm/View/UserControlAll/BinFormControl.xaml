@@ -91,7 +91,7 @@
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Файл:" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Размер: "/>
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FilePath}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Buffer}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Size}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </Grid>
             
         </Grid>

@@ -29,17 +29,18 @@ namespace AppBinForm.Command
                 return;
             }
             long.TryParse(_binFormViewModel.StrSearch, System.Globalization.NumberStyles.HexNumber, null, out long i);
-            while (i%16 != 0)
-            {
-                i--;
-            }
-            if (i > _binFormViewModel.Stream.Length)
+            if (i > _binFormViewModel.Stream.Length - 1)
             {
                 MessageBox.Show("Введенная позиция превышает размер файла.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+            while (i%16 != 0)
+            {
+                i--;
+            }
             if (_binFormViewModel.MaxOffset == 0) return;
             _binFormViewModel.CurrentPosition = i;
+            _binFormViewModel.IsChecked = true;
             _binFormViewModel.IsSearch = true;
         }
     }
