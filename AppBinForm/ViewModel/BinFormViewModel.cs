@@ -49,6 +49,7 @@ namespace AppBinForm.ViewModel
             {
                 _isOpen = value;
                 OnPropertyChanged(nameof(IsOpen));
+                if (!_isOpen) Offset = 0;
             }
         }
         public bool IsScroll
@@ -188,7 +189,7 @@ namespace AppBinForm.ViewModel
             {
                 _offset = value;
                 OnPropertyChanged(nameof(Offset));
-                if (IsChecked)
+                if (IsChecked && IsOpen)
                 {
                     if (_offset == 0 && !(CurrentPosition - _previousPosition <= _previousPosition))
                     {
@@ -203,7 +204,7 @@ namespace AppBinForm.ViewModel
                         ReadBinFile(_buffer, CurrentPosition);
                     }
                 }
-                else
+                else if (!IsChecked && IsOpen)
                 {
                     if (_offset != 0 && _offset > _minProc && _maxProc <= _offset)
                     {

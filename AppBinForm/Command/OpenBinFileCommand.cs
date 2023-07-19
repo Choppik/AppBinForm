@@ -26,8 +26,6 @@ namespace AppBinForm.Command
                 _binFormViewModel.IsChecked = true;
                 _binFormViewModel.ResultStr = "";
                 _binFormViewModel.CurrentPosition = 0;
-                _binFormViewModel.Offset = 0;
-                _binFormViewModel.MaxOffset = 0;
                 _binFormViewModel.Stream = new(_binFormViewModel.FilePath, FileMode.Open, FileAccess.Read);
                 var buf = _binFormViewModel.Stream.Length - 1;
                 _binFormViewModel.Size = buf.ToString() + " (" + buf.ToString("X") + ')';
