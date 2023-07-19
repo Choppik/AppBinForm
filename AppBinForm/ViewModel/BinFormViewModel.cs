@@ -13,7 +13,6 @@ namespace AppBinForm.ViewModel
     {
         #region Переменные и свойства
         private FileStream _stream;
-
         private bool _isOpen = false;
         private bool _isScroll = false;
         private bool _isSearch = false;
@@ -23,9 +22,9 @@ namespace AppBinForm.ViewModel
         private string _strSearch = "00000000";
         private double _offset = 0.00;
         private double _maxOffset = 0.00;
-        private double _maxShProc = 0.00;
-        private double _minShProc = 0.00;
-        private int _count = 1;
+        private double _maxProc = 0.00;
+        private double _minProc = 0.00;
+        private int _count = 0;
         private long _currentPos = 0;
         private long _previousPosition = 0;
         private long _buffer = 0;
@@ -49,8 +48,6 @@ namespace AppBinForm.ViewModel
             set
             {
                 _isOpen = value;
-                if (!_isOpen)
-                    Stream?.Close();
                 OnPropertyChanged(nameof(IsOpen));
             }
         }
@@ -76,6 +73,16 @@ namespace AppBinForm.ViewModel
             {
                 _isChecked = value;
                 OnPropertyChanged(nameof(IsChecked));
+                _count = 0;
+                if (_buffer > _maxLines * _nBytesRead)
+                {
+                    if (!_isChecked)
+                    {
+                        _count = (int)(_offset / _minProc);
+                        _maxProc = _offset;
+                        ReadBinFileInPercent(_buffer, CurrentPosition, _count);
+                    }
+                }
             }
         }
         public bool IsSearch
@@ -107,7 +114,6 @@ namespace AppBinForm.ViewModel
                 if (_stream != null)
                 {
                     _buffer = Stream.Length;
-                    Offset = 0.00;
                     ReadBinFile(_buffer, CurrentPosition);
                 }
             }
@@ -187,35 +193,35 @@ namespace AppBinForm.ViewModel
                     if (_offset == 0 && !(CurrentPosition - _previousPosition <= _previousPosition))
                     {
                         IsScroll = true;
-                        _maxShProc = _offset;
+                        _maxProc = _offset;
                         ReadBinFile(_buffer, CurrentPosition);
                     }
                     else if (_offset == MaxOffset && CurrentPosition != _buffer && CurrentPosition != 0)
                     {
                         IsScroll = false;
-                        _maxShProc = _offset;
+                        _maxProc = _offset;
                         ReadBinFile(_buffer, CurrentPosition);
                     }
                 }
                 else
                 {
-                    if (_offset != 0 && _offset > _minShProc && _maxShProc <= _offset)
+                    if (_offset != 0 && _offset > _minProc && _maxProc <= _offset)
                     {
-                        if (_offset / _minShProc >= _count + 1)
+                        if (_offset / _minProc >= _count + 1)
                         {
                             IsScroll = false;
-                            _count = (int)(_offset / _minShProc);
-                            _maxShProc = _offset;
+                            _count = (int)(_offset / _minProc);
+                            _maxProc = _offset;
                             ReadBinFileInPercent(_buffer, CurrentPosition, _count);
                         }
                     }
-                    else if (_offset != MaxOffset && _offset < _maxShProc)
+                    else if (_offset != MaxOffset && _offset < _maxProc)
                     {
-                        if (_offset / _minShProc <= _count - 1)
+                        if (_offset / _minProc <= _count - 1)
                         {
                             IsScroll = true;
-                            _count = (int)(_offset / _minShProc);
-                            _maxShProc = _offset;
+                            _count = (int)(_offset / _minProc);
+                            _maxProc = _offset;
                             ReadBinFileInPercent(_buffer, CurrentPosition, _count);
                         }
                     }
@@ -234,7 +240,7 @@ namespace AppBinForm.ViewModel
                 OnPropertyChanged(nameof(MaxOffset));
                 if (MaxOffset != 0)
                 {
-                    _minShProc = MaxOffset / 100;
+                    _minProc = MaxOffset / 100;
                 }
             }
         }
@@ -255,15 +261,18 @@ namespace AppBinForm.ViewModel
         {
             if (buffer == 0) return; //Если размер файла 0, то выйти
             else if (currentPosition == 0) Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка начальной позиции
+            else if (IsSearch && currentPosition > buffer - _maxLines * _nBytesRead)
+            {
+                currentPosition = buffer - _maxLines * _nBytesRead;
+                currentPosition = Сorrect(currentPosition);
+                Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка конкретной позиции
+            }
             else if (IsSearch) Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка конкретной позиции
             else if (!IsScroll) Stream.Seek(currentPosition - _previousPosition, SeekOrigin.Begin); //Установка позиции при скроллинге вниз
             else if (IsScroll)
             {
                 var newPosition = currentPosition - _previousPosition * 2;
-                while (newPosition % 16 != 0)
-                {
-                    newPosition--;
-                }
+                newPosition = Сorrect(newPosition);
                 if (newPosition != 0 && newPosition < _previousPosition) Stream.Seek(0, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
                 else Stream.Seek(newPosition - _previousPosition, SeekOrigin.Begin); //Установка позиции при скроллинге вверх
             }
@@ -271,14 +280,12 @@ namespace AppBinForm.ViewModel
 
             StringBuilder sb = ReadPartFile(buffer);
 
-            if (currentPosition == 0)
-            {
-                _previousPosition = CurrentPosition / 2;
-                if (Offset != 0) Offset = 0;
-            }
-            else if (CurrentPosition != buffer && Offset != 0 && !IsSearch) Offset = MaxOffset / 2; //Проверки, когда нужно сместить ползунок в середину
-            else if (currentPosition != 0 && Offset == 0 && MaxOffset != 0) Offset = MaxOffset / 2;
+            if (currentPosition == 0) _previousPosition = CurrentPosition / 2;
+            else if (CurrentPosition != buffer && Offset != 0 && !IsSearch && IsChecked) Offset = MaxOffset / 2; //Проверки, когда нужно сместить ползунок в середину
+            else if (currentPosition != 0 && Offset == 0 && MaxOffset != 0 && !IsSearch && IsChecked) Offset = MaxOffset / 2;
             else if (IsSearch && CurrentPosition != buffer) Offset = 1;
+            else if (IsSearch && currentPosition >= buffer - _maxLines * _nBytesRead) Offset = MaxOffset;
+            else return;
 
             ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
             IsSearch = false;
@@ -286,25 +293,19 @@ namespace AppBinForm.ViewModel
 
         private void ReadBinFileInPercent(long buffer, long currentPosition, int count)
         {
-            if (buffer < _maxLines * _nBytesRead) return;
             if (buffer == 0) return; //Если размер файла 0, то выйти
 
             var buf = buffer / 100;
-            while (buf % 16 != 0)
-            {
-                buf--;
-            }
+            buf = Сorrect(buf);
 
             var endFile = buffer - _nBytesRead * _maxLines;
-            while (endFile % 16 != 0)
-            {
-                endFile++;
-            }
+            endFile = Сorrect(endFile);
 
             var curPos = buf * count;
 
             if (currentPosition == 0) Stream.Seek(currentPosition, SeekOrigin.Begin); //Установка начальной позиции
-            //else if (buffer == currentPosition && !IsScroll) return;
+            else if (buffer < _maxLines * _nBytesRead) return;
+            else if (currentPosition >= endFile && !IsScroll && endFile >= 0) Stream.Seek(endFile, SeekOrigin.Begin);
             else if (count == 100 && !IsScroll) Stream.Seek(endFile, SeekOrigin.Begin);
             else if (!IsScroll) Stream.Seek(curPos, SeekOrigin.Begin); //Установка позиции при скроллинге вниз
             else if ((count == 0 && IsScroll) || curPos - buf < 0) Stream.Seek(0, SeekOrigin.Begin);
@@ -315,6 +316,7 @@ namespace AppBinForm.ViewModel
             ResultStr = ResultStr.Insert(ResultStr.Length, sb.ToString());
             IsSearch = false;
         }
+
         private StringBuilder ReadPartFile(long buffer)
         {
             var maxBytesRead = buffer; //Получаю количество байт для чтения
@@ -349,6 +351,14 @@ namespace AppBinForm.ViewModel
                 if (CurrentPosition >= buffer) break;
             }
             return sb;
+        }
+        public long Сorrect(long buf)
+        {
+            while (buf % 16 != 0)
+            {
+                buf++;
+            }
+            return buf;
         }
     }
 }

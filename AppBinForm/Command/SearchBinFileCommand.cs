@@ -31,13 +31,10 @@ namespace AppBinForm.Command
             long.TryParse(_binFormViewModel.StrSearch, System.Globalization.NumberStyles.HexNumber, null, out long i);
             if (i > _binFormViewModel.Stream.Length - 1)
             {
-                MessageBox.Show("Введенная позиция превышает размер файла.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Введенное смещение превышает размер файла.", "Поиск", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            while (i%16 != 0)
-            {
-                i--;
-            }
+            i = _binFormViewModel.Сorrect(i);
             if (_binFormViewModel.MaxOffset == 0) return;
             _binFormViewModel.CurrentPosition = i;
             _binFormViewModel.IsChecked = true;

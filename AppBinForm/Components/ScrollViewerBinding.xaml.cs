@@ -59,8 +59,7 @@ namespace AppBinForm.Components
 
         public static void BindVerticalOffset(ScrollViewer scrollViewer)
         {
-            if (scrollViewer.GetValue(VerticalScrollBindingProperty) != null)
-                return;
+            if (scrollViewer.GetValue(VerticalScrollBindingProperty) != null) return;
 
             scrollViewer.SetValue(VerticalScrollBindingProperty, true);
             scrollViewer.ScrollChanged += (s, se) =>
